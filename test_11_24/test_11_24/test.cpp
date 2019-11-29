@@ -167,18 +167,53 @@ using namespace std;
 //	cout << typeid(b).name() << endl;
 //}
 
+//void main()
+//{
+//	int arr[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+//	int n = sizeof(arr) / sizeof(int);
+//	for (int i = 0; i < n; ++i)
+//		cout << arr[i] << " ";
+//	cout << endl;
+//
+//	for (auto ele : arr)
+//	{
+//		ele = 11;
+//		cout << ele << " ";
+//	}
+//	cout << endl;
+//}
+
+// 1 常方法的const 怎么了
+// 1.不能修改数据成员
+//GetData(Test * const this)  ==  GetData()；
+//GetData()const == GetData(const Test * const this)；
+// 2 GetData() 与 GetData()const 能否共存
+//可以共存
+//构成函数重载
+//const Test t（100）；不能调动GetData() //Test * const this与const Test * const this不兼容
+//常对象只能调动方法
+//const int getData()
+//函数的返回值被const修饰，不能作为左值。
+//对于内置类型，返回值，这么使用好像没什么意义。
+//因为返回的是临时变量，临时变量已经是const
+//如果返回一个类对象的引用，加const可以确保，返回值不会被直接操作。
+//
+//int getData() const
+//该函数是类的const成员函数
+//即该函数不会修改类的数据成员
+//当定义一个const对象时，只能调用const成员函数，
+//以保证类的数据成员不会改变。
+// 3 拷贝构造函数的const 
+//Test（const Test &t）
+//const ： 不允许更改t所引用对象的数据成员，保护数据
+// 4 赋值语句 
+//	 operator= ：运算符重载（. ？ ： ：： 不能重载）
+//   Test& operator=(const Test &t)  返回类型Test& : 可以连等 const ： 不允许修改t所引用对象的数据成员，保护数据 ； & ：引用 提升效率
+//   void  operator=(Test t)  不能连等 ：t1=t2=t3 ：即 t1.operator=(t2.operator=(t3operator=()))
+
+
 void main()
 {
-	int arr[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
-	int n = sizeof(arr) / sizeof(int);
-	for (int i = 0; i < n; ++i)
-		cout << arr[i] << " ";
-	cout << endl;
-
-	for (auto ele : arr)
-	{
-		ele = 11;
-		cout << ele << " ";
-	}
-	cout << endl;
+	int arr[10][10];
+	printf("%d", sizeof(arr));
 }
