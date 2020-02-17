@@ -2,46 +2,321 @@
 
 #include<iostream>
 #include<string>
+#include<assert.h>
 using namespace std;
 
-class String
+namespace bit
 {
-public:
-	String(const char *str = "")
+	class string
 	{
-		m_str = new char[strlen(str) + 1];
-		strcpy(m_str, str);
-	}
-	String(const String &s)
-	{
-		String tmp(s.m_str);
-		std::swap(this->m_str, tmp.m_str);
-	}
-	String& operator=(const String &s)
-	{
-		if (this == &s)
+		friend ostream& operator<<(ostream &out, const string &s);
+		friend istream& operator>>(ostream &in, bit::string &s);
+	public:
+		typedef char* iterator;
+	public:
+		string(const char *str = "") :m_str(nullptr)
 		{
+			m_capacity = m_size = strlen(str);
+			m_str = new char[m_capacity + 1];		//要放'\0';
+			strcpy(m_str, str);
+		}
+		string(const string &s) :m_str(nullptr), m_capacity(0), m_size(0)
+		{
+			string tmp(s.m_str);
+			_swap(*this, tmp);
+		}
+		string& operator=(const string &s)
+		{
+			if (this != &s)
+			{
+				string tmp(s);
+				_swap(*this, tmp);
+			}
+			return *this;
+		}
+		~string()
+		{
+			if (m_str)
+			{
+				delete[]m_str;
+				m_str = nullptr;
+			}
+			m_capacity = m_size = 0;
+		}
+	public:
+		iterator begin()
+		{
+			return m_str;
+		}
+		iterator end()
+		{
+			return m_str + m_size;
+		}
+	public:
+		size_t size()const
+		{
+			return m_size;
+		}
+		size_t capacity()const
+		{
+			return m_capacity;
+		}
+		bool empty()const
+		{
+			return m_size == 0;
+		}
+		void clear()
+		{
+			m_size = 0;
+			m_str[0] = '\0';
+		}
+	public:
+		const char* c_str()const
+		{
+			return m_str;
+		}
+		char& operator[](int i)
+		{
+			assert(i >= 0 && i < m_size);
+			return m_str[i];
+		}
+		void reserve(size_t new_capacity)
+		{
+			if (new_capacity > m_capacity)
+			{
+				char* new_str = new char[new_capacity + 1];
+				memcpy(new_str, m_str, m_size);
+				m_capacity = new_capacity;
+				delete[]m_str;
+				m_str = new_str;
+			}
+		}
+		void push_back(char c)
+		{
+			if (m_size == m_capacity)
+				reserve(m_capacity + 2);
+			m_str[m_size++] = c;
+			m_str[m_size] = '\0';
+		}
+	public:
+		string& operator+=(char c)
+		{
+			push_back(c);
+			return *this;
+		}
+		void append(const char* str)
+		{
+			while (*str)
+			{
+				push_back(*str);
+				str++;
+			}
+		}
+		string& operator+=(const char* str)
+		{
+			append(str);
+			return *this;
+		}
+		void resize(size_t newSize, char c = '\0')
+		{
+			if (newSize > m_size)
+			{
+				if (newSize > m_capacity)
+				{
+					reserve(newSize);
+				}
+				memset(m_str + m_size, c, newSize - m_size);
+			}
+			m_size = newSize;
+			m_str[newSize] = '\0';
+		}
+		const char& operator[](size_t index)const
+		{
+			assert(index < m_size);
+			return m_str[index];
+		}
+	public:
+		bool operator<(const string& s)
+		{
+			return strcmp(m_str, s.m_str);
+		}
+		bool operator>=(const string& s)
+		{
+			return !(*this<s);
+		}
+		bool operator>(const string& s)
+		{
+			return strcmp(m_str, s.m_str);
+		}
+		bool operator<=(const string& s)
+		{
+			return !(*this > s);
+		}
+		bool operator==(const string& s)
+		{
+			return strcmp(m_str, s.m_str);
+		}
+		bool operator!=(const string& s)
+		{
+			return !(*this == s);
+		}
+		// 返回c在string中第一次出现的位置
+		size_t find(char c, size_t pos = 0) const;
+		// 返回子串s在string中第一次出现的位置
+		size_t find(const char* s, size_t pos = 0) const;
+		// 在pos位置上插入字符c/字符串str，并返回该字符的位置
+		string& insert(size_t pos, char c);
+		string& insert(size_t pos, const char* str);
+		// 删除pos位置上的元素，并返回该元素的下一个位置
+		string& erase(size_t pos, size_t len);
+	protected:
+		static void _swap(string &s1, string &s2)
+		{
+			std::swap(s1.m_str, s2.m_str);
+			std::swap(s1.m_capacity, s2.m_capacity);
+			std::swap(s1.m_size, s2.m_size);
+		}
+	private:
+		char * m_str;
+		size_t m_capacity;
+		size_t m_size;
+	};
 
-		}
-		return *this;
-	}
-	~String()
+	ostream& operator<<(ostream &out, const string &s)
 	{
-		if (m_str)
-		{
-			delete []m_str;
-			m_str = nullptr;
-		}
+		out << s.m_str;
+		return out;
 	}
-private:
-	char *m_str;
 };
+
 
 int main()
 {
+	bit::string str = "hello world";
+	string str1 = "Hello linux!";
+	cout << "str = " << str << endl;
+	str += '!';
+	cout << "str = " << str << endl;
+	str.append("Hello C++!");
+	cout << "str = " << str << endl;
+	str += "Hello C++!";
+	cout << "str = " << str << endl;
+	str.resize(50,'x');
+	cout << "str = " << str << endl;
 
 	return 0;
 }
+
+//int main()
+//{
+//	bit::string str("hello C++");
+//	cout << "str = " << str << endl;
+//	str.push_back('x');
+//	cout << "str = " << str << endl;
+//
+//	return 0;
+//}
+
+//int main()
+//{
+//	bit::string str("Hello C++");
+//	cout << "str = " << str << endl;
+//	const char *res = str.c_str();
+//	cout << "res = " << res << endl;
+//
+//	return 0;
+//}
+
+//int main()
+//{
+//	bit::string str("Hello C++");
+//	cout << "str = "<<str<<endl;
+//	for (int i = 0; i<str.size(); ++i)
+//	{
+//		cout << str[i];
+//	}
+//	cout << endl;
+//	return 0;
+//}
+
+//int main()
+//{
+//	bit::string str("C++");
+//	cout << "str = " << str << endl;
+//
+//	bit::string str1 = str;
+//	cout << "str1 = " << str1 << endl;
+//
+//	bit::string str2;
+//	str2 = str1;
+//	cout << "str2 = " << str2 << endl;
+//
+//	bit::string::iterator it = str2.begin();
+//	while (it != str2.end())
+//	{
+//		cout << *it;
+//		++it;
+//	}
+//	cout << endl;
+//	return 0;
+//}
+
+//class String
+//{
+//	friend ostream& operator<<(ostream &out,const String &s);
+//
+//public:
+//	String(const char *str = "")
+//	{
+//		m_str = new char[strlen(str) + 1];
+//		strcpy(m_str, str);
+//	}
+//	String(const String &s) :m_str(nullptr)
+//	{
+//		String tmp(s.m_str);
+//		std::swap(this->m_str, tmp.m_str);
+//	}
+//	String& operator=(const String &s)
+//	{
+//		if (this != &s)
+//		{
+//			String tmp(s.m_str);
+//			std::swap(m_str, tmp.m_str);
+//		}
+//		return *this;
+//	}
+//	~String()
+//	{
+//		if (m_str)
+//		{
+//			delete []m_str;
+//			m_str = nullptr;
+//		}
+//	}
+//private:
+//	char *m_str;
+//};
+//
+//ostream& operator<<(ostream &out, const String &s)
+//{
+//	out << s.m_str;
+//	return out;
+//}
+//
+//int main()
+//{
+//	String str1("Bit.");
+//	cout << "str1 = " << str1 << endl;
+//
+//	String str2 = str1;
+//	cout << "str2 = " << str2 << endl;
+//
+//	String str3("Hello");
+//	str3 = str2;
+//	cout << "str3 = " << str3 << endl;
+//
+//	return 0;
+//}
 
 //传统写法
 //class String
