@@ -10,9 +10,10 @@ namespace bit
 	class string
 	{
 		friend ostream& operator<<(ostream &out, const string &s);
-		friend istream& operator>>(ostream &in, bit::string &s);
+		friend istream& operator>>(istream &_cin, bit::string &s);
 	public:
 		typedef char* iterator;
+		static const size_t npos = -1;
 	public:
 		string(const char *str = "") :m_str(nullptr)
 		{
@@ -106,11 +107,18 @@ namespace bit
 		}
 		void append(const char* str)
 		{
-			while (*str)
+			/*while (*str)
 			{
 				push_back(*str);
 				str++;
+			}*/
+			int str_len = strlen(str);
+			if (str_len + m_size > m_capacity)
+			{
+				reserve((m_capacity + str_len) * 2);
 			}
+			strcpy(m_str + m_size, str);
+			m_size += str_len;
 		}
 		string& operator+=(const char* str)
 		{
@@ -123,7 +131,7 @@ namespace bit
 			{
 				if (newSize > m_capacity)
 				{
-					reserve(newSize);
+					reserve(newSize*2);
 				}
 				memset(m_str + m_size, c, newSize - m_size);
 			}
@@ -138,7 +146,7 @@ namespace bit
 	public:
 		bool operator<(const string& s)
 		{
-			return strcmp(m_str, s.m_str);
+			return (strcmp(m_str, s.m_str) < 0);
 		}
 		bool operator>=(const string& s)
 		{
@@ -146,7 +154,7 @@ namespace bit
 		}
 		bool operator>(const string& s)
 		{
-			return strcmp(m_str, s.m_str);
+			return (strcmp(m_str, s.m_str) > 0);
 		}
 		bool operator<=(const string& s)
 		{
@@ -154,21 +162,70 @@ namespace bit
 		}
 		bool operator==(const string& s)
 		{
-			return strcmp(m_str, s.m_str);
+			return (strcmp(m_str, s.m_str) == 0);
 		}
 		bool operator!=(const string& s)
 		{
 			return !(*this == s);
 		}
 		// 返回c在string中第一次出现的位置
-		size_t find(char c, size_t pos = 0) const;
+		size_t find(char c, size_t pos = 0) const
+		{
+			for (int i = pos; i < m_size; ++i)
+			{
+				if (m_str[i] == c)
+					return i;
+			}
+			return npos;
+		}
 		// 返回子串s在string中第一次出现的位置
-		size_t find(const char* s, size_t pos = 0) const;
+		size_t find(const char* s, size_t pos = 0) const
+		{
+			size_t i = pos, j = 0;
+			size_t s_len = strlen(s);
+			while (i < m_size && j < s_len)
+			{
+				if (m_str[i] == s[j])
+				{
+					i++;
+					j++;
+				}
+				else
+				{
+					i = i - j + 1;
+					j = 0;
+				}
+			}
+			if (j >= s_len)
+			{
+				return i - j;
+			}
+			return npos;
+		}
 		// 在pos位置上插入字符c/字符串str，并返回该字符的位置
-		string& insert(size_t pos, char c);
+		string& insert(size_t pos, char c)
+		{
+			if (m_size + 1 > m_capacity)
+			{
+				reserve(((m_size + 1) * 2));
+			}
+			for (size_t i = m_size; i > pos; --i)
+			{
+				m_str[i] = m_str[i - 1];
+			}
+			m_str[pos] = c;
+			m_size++;
+			m_str[m_size] = '\0';
+			return *this;
+		}
 		string& insert(size_t pos, const char* str);
 		// 删除pos位置上的元素，并返回该元素的下一个位置
-		string& erase(size_t pos, size_t len);
+		string& erase(size_t pos, size_t len)
+		{
+			memcpy(m_str + pos, m_str + pos + len, m_size - pos - len + 1);
+			m_size -= len;
+			return *this;
+		}
 	protected:
 		static void _swap(string &s1, string &s2)
 		{
@@ -187,25 +244,87 @@ namespace bit
 		out << s.m_str;
 		return out;
 	}
-};
 
+	istream& operator>>(istream &_cin, bit::string &s)
+	{
+		static const size_t default_buf_size = 10;
+		int capacity = default_buf_size;
+		char *str = (char*)malloc(sizeof(char)*default_buf_size);
+		char *buf = str;
+		size_t count = 0;
+
+		//跳过字符串起始位置的空格或者换行
+		while ((*buf = getchar()) == ' ' || (*buf == '\n'));
+
+		for (;;)
+		{
+			if (*buf == '\n' || *buf == ' ')
+			{
+				*buf = '\0';
+				break;
+			}
+			else if (count == capacity)
+			{
+				capacity *= 2;
+				str = (char*)realloc(str, capacity);
+				//重新定位buf的位置
+				buf = str + count;
+			}
+			*++buf = getchar();
+			count++;
+		}
+
+		s.m_str = str;
+		s.m_capacity = capacity;
+		s.m_size = count;
+		return _cin;
+	}
+};
 
 int main()
 {
-	bit::string str = "hello world";
-	string str1 = "Hello linux!";
-	cout << "str = " << str << endl;
-	str += '!';
-	cout << "str = " << str << endl;
-	str.append("Hello C++!");
-	cout << "str = " << str << endl;
-	str += "Hello C++!";
-	cout << "str = " << str << endl;
-	str.resize(50,'x');
-	cout << "str = " << str << endl;
-
-	return 0;
+	bit::string str;
+	cin >> str;
+	cout << str << endl;
+	//bit::string str("abcABCxyzXYZ@qq.com");
+	//cout << "size = " << str.size() << endl;
+	//cout << "capacity = " << str.capacity() << endl;
+	//str.erase(3, 3);
+	//cout << "size = " << str.size() << endl;
+	//cout << "capacity = " << str.capacity() << endl;
+	//cout << str << endl;
+	//return 0;
 }
+
+//int main()
+//{
+//	
+//	bit::string str("365692697690203@qq.com");
+//	cout << "size = " << str.size() << endl;
+//	cout << "capacity = " << str.capacity() << endl;
+//	str.insert(6, '@');
+//	cout << "size = " << str.size() << endl;
+//	cout << "capacity = " << str.capacity() << endl;
+//	cout << str << endl; //("365692 @ 697690203@qq.com");
+//	return 0;
+//}
+
+//int main()
+//{
+//	bit::string str = "hello world";
+//	string str1 = "Hello linux!";
+//	cout << "str = " << str << endl;
+//	str += '!';
+//	cout << "str = " << str << endl;
+//	str.append("Hello C++!");
+//	cout << "str = " << str << endl;
+//	str += "Hello C++!";
+//	cout << "str = " << str << endl;
+//	str.resize(50,'x');
+//	cout << "str = " << str << endl;
+//
+//	return 0;
+//}
 
 //int main()
 //{
