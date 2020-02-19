@@ -249,13 +249,14 @@ namespace bit
 	{
 		static const size_t default_buf_size = 10;
 		int capacity = default_buf_size;
-		char *str = (char*)malloc(sizeof(char)*default_buf_size);
+		//char *str = (char*)malloc(sizeof(char)*default_buf_size);
+		char *str = new char[capacity];
 		char *buf = str;
-		size_t count = 0;
+		size_t count = 1;//字符个数
 
 		//跳过字符串起始位置的空格或者换行
-		while ((*buf = getchar()) == ' ' || (*buf == '\n'));
-
+		while ((*buf = getchar()) == ' ' || (*buf == '\n'))
+		{}
 		for (;;)
 		{
 			if (*buf == '\n' || *buf == ' ')
@@ -263,12 +264,16 @@ namespace bit
 				*buf = '\0';
 				break;
 			}
-			else if (count == capacity)
+			else if (count >= capacity)
 			{
 				capacity *= 2;
-				str = (char*)realloc(str, capacity);
+				//str = (char*)realloc(str, capacity);
+				char *new_str = new char[capacity];		//申请空间
+				memcpy(new_str, str, count);
+				delete []str;
+				str = new_str;
 				//重新定位buf的位置
-				buf = str + count;
+				buf = str + count - 1;
 			}
 			*++buf = getchar();
 			count++;
