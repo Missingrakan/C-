@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <vld.h>
 
 using namespace std;
 
@@ -17,6 +18,122 @@ namespace bit
 		{}
 		vector(size_t n, const T&value = T()) :start(nullptr), finish(nullptr), end_of_storage(nullptr) //const T&value = T()    零初始化
 		{
+			reserve(n);
+			while (n-- != 0)
+				push_back(value);
+		}
+		template<class InputIterator>
+		vector(InputIterator first, InputIterator last)
+			:start(nullptr), finish(nullptr), end_of_storage(nullptr)
+		{
+			reserve(last - first);
+			while (first != last)
+			{
+				push_back(*first);
+				first++;
+			}
+		}
+		~vector()
+		{
+			delete []start;
+			start = finish = end_of_storage = nullptr;
+		}
+	public:
+		size_t size()const
+		{return finish - start;}
+		size_t capacity()const
+		{return end_of_storage - start;}
+		bool empty()const
+		{return finish == start;}
+	public:
+		iterator begin()
+		{return start;}
+		iterator end()
+		{return finish;}
+	public:
+		void push_back(const T &x)
+		{insert(end(), x);}
+		iterator insert(iterator pos, const T &x)
+		{
+			if (finish >= end_of_storage)
+			{
+				size_t oldpos = pos - start;
+				size_t new_cpy = capacity() ? capacity() * 2 : 1;		//capacity()可能一开始为0，容易引发错误
+				reserve(new_cpy);
+
+				//重新定位迭代器
+				pos = start + oldpos;
+			}
+
+			iterator p = finish;
+			while (p != pos)
+			{
+				*p = *(p - 1);
+				--p;
+			}
+			*p = x;
+			finish++;
+			return pos;
+		}
+	public:
+		void swap(vector &v)
+		{
+			std::swap(start, v.start);
+			std::swap(finish, v.finish);
+			std::swap(end_of_storage, v.end_of_storage);
+		}
+		void reserve(size_t n)
+		{
+			if (n > capacity())
+			{
+				size_t oldsize = size();
+				T *new_start = new T[n];
+				if (start)
+				{
+					for (int i = 0; i < oldsize; ++i)
+					{
+						new_start[i] = start[i];
+					}
+				}
+
+				//释放原有空间
+				if (start)
+					delete []start;
+
+				start = new_start;
+				finish = start + oldsize;
+				end_of_storage = start + n;
+			}
+		}
+		void resize(size_t n, const T& value = T())
+		{
+			if (n <= size())
+			{
+				finish = start + n;
+				return;
+			}
+
+			if (n > capacity())
+				reserve(n * 2);
+
+			iterator p = finish;
+			finish = start + n;
+			while (p != finish)
+			{
+				*p = value;
+				p++;
+			}
+		}
+		iterator erase(iterator pos)
+		{
+			iterator p = pos;
+			while (p != finish - 1)
+			{
+				*p = *(p + 1);
+				p++;
+			}
+			finish--;
+			return pos;
 		}
 	private:
 		iterator start;
@@ -27,8 +144,99 @@ namespace bit
 
 int main()
 {
+	bit::vector<int> v;
+	cout << "size = " << v.size() << endl;
+	cout << "capacity = " << v.capacity() << endl;
+	v.reserve(2);
+	//v.resize(15,1);
+
+	v.insert(v.end(), 1);
+	v.insert(v.end(), 2);
+	v.insert(v.end(), 3);
+	v.insert(v.begin(), 4);
+
+	//4 100 1 2 3
+	auto p = find(v.begin(), v.end(), 1);
+	v.insert(p, 100);
+
+	v.push_back(200);
+
+	cout << "size = " << v.size() << endl;
+	cout << "capacity = " << v.capacity() << endl;
+
+	p = find(v.begin(), v.end(), 1);
+	v.erase(p);
+
+	for (auto &e : v)
+		cout << e << " ";
+	cout << endl;
+	//int ar[] = { 1, 2, 3 };
+	//int br[] = { 4, 5, 6 };
+	//bit::vector<int> v(ar, ar + 3);
+	//bit::vector<int> v1(br, br + 3);
+	//for (auto &e : v)
+	//	cout << e << " ";
+	//cout << endl;
+	//for (auto &e : v1)
+	//	cout << e << " ";
+	//cout << endl;
+	//v.swap(v1);
+	//for (auto &e : v)
+	//	cout << e << " ";
+	//cout << endl;
+	//for (auto &e : v1)
+	//	cout << e << " ";
+	//cout << endl;
+	//int ar[] = { 1, 2, 3, 4, 5 };
+	//bit::vector<int> v(ar, ar + 5);  //int *p1,  int *p2
+	//cout << "size = " << v.size() << endl;
+	//cout << "capacity = " << v.capacity() << endl;
+	//for (auto &e : v)
+	//	cout << e << " ";
+	//cout << endl;
 	return 0;
 }
+
+//int main()
+//{
+//	bit::vector<int> v;
+//	cout << "size = " << v.size() << endl;
+//	cout << "capacity = " << v.capacity() << endl;
+//	v.reserve(2);
+//	//v.resize(15,1);
+//	v.insert(v.end(), 1);
+//	v.insert(v.end(), 2);
+//	v.insert(v.end(), 3);
+//	v.insert(v.begin(), 4);
+//	//4 100 1 2 3
+//	auto p = find(v.begin(), v.end(), 1);
+//	v.insert(p, 100);
+//	v.push_back(200);
+//	cout << "size = " << v.size() << endl;
+//	cout << "capacity = " << v.capacity() << endl;
+//	for (auto &e : v)
+//		cout << e << " ";
+//	cout << endl;
+//
+//	return 0;
+//}
+
+//int main()
+//{
+//	bit::vector<int> v;
+//	cout << "size = " << v.size() << endl;
+//	cout << "capacity = " << v.capacity() << endl;
+//	v.reserve(10);
+//	cout << "size = " << v.size() << endl;
+//	cout << "capacity = " << v.capacity() << endl;
+//	v.reserve(50);
+//	cout << "size = " << v.size() << endl;
+//	cout << "capacity = " << v.capacity() << endl;
+//	v.reserve(20);
+//	cout << "size = " << v.size() << endl;
+//	cout << "capacity = " << v.capacity() << endl;
+//	return 0;
+//}
 
 //int main()
 //{
