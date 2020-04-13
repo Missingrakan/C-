@@ -1,11 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 
 #include "common.h"
-#include "Susutil.h"
+#include "Sysutil.h"
 #include "./sqlite/sqlite3.h"
-
-//静态库使用sqlite
-#pragma comment(lib,"./sqlite/sqlite3.lib")
+#include "DateManager.h"
+#include "ScanManager.h"
 
 void Test_DirectionList()
 {
@@ -53,10 +52,96 @@ void Test_Sqlite()
 	sqlite3_close(db);
 }
 
+void Test_SqliteManager()
+{
+	SqliteManager sm;
+	sm.Open("doc.db");
+
+	//string sql = "create table if not exists doc_tb(id integer primary key autoincrement,doc_name test,doc_path test)";
+	//sm.ExecuteSql(sql);
+
+	//string sql1 = "insert into doc_tb values(null,'stl.pdf','c:\\')";
+	//sm.ExecuteSql(sql1);
+
+	string sql = "select * from doc_tb";
+	int row = 0;
+	int col = 0;
+	char **ppRet = 0;
+	sm.GetResultTable(sql, row, col, ppRet);
+	for (int i = 0; i <= row; ++i)
+	{
+		for (int j = 0; j < col; ++j)
+		{
+			printf("%-10s", *(ppRet + (i*col) + j));
+		}
+		printf("\n");
+	}
+	sqlite3_free_table(ppRet);
+}
+
+void Test_Log()
+{
+	FILE *fp = fopen("Test.txt", "r");
+	if (fp == NULL)
+	{
+		TRACE_LOG("Open File Error.");
+		return;
+	}
+	else
+		TRACE_LOG("Open File Success.");
+
+	fclose(fp);
+}
+
+void Test_Set()
+{
+	vector<int> v = { 8, 0, 9, 9, 9, 9, 9, 3, 4, 7, 1, 5, 2, 6, 7 };
+
+	multiset<int> s;	//保存重复数据
+	//set<int> s;		//不保存重复数据
+	for (const auto &e : v)
+		s.insert(e);
+
+	auto it = s.begin();
+	while (it != s.end())
+	{
+		cout << *it << " ";
+		++it;
+	}
+	cout << endl;
+}
+
+void Test_Map()
+{
+	//映射
+	pair<int, string> p1 = { 1, "abc" };
+	pair<int, string> p2 = { 5, "xyz" };
+	pair<int, string> p3 = { 3, "lmn" };
+	pair<int, string> p4 = { 2, "opq" };
+	pair<int, string> p5 = { 9, "hjk" };
+	pair<int, string> p6 = { 7, "rty" };
+
+	//cout<<p1.first<<" : "<<p1.second<<endl;
+	map<int, string> mp;
+	mp.insert(p1);
+	mp.insert(p2);
+	mp.insert(p3);
+	mp.insert(p4);
+	mp.insert(p5);
+	mp.insert(p6);
+
+	for (const auto &e : mp)
+		cout << e.first << " : " << e.second << endl;
+}
+
 int main()
 {
 	//Test_DirectionList();
-	Test_Sqlite();
+	//Test_Sqlite();
+	//Test_SqliteManager();
+	//Test_Log();
+	//Test_Set();
+	Test_Map();
 	return 0;
 }
 
