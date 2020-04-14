@@ -3,7 +3,7 @@
 #include "common.h"
 #include "Sysutil.h"
 #include "./sqlite/sqlite3.h"
-#include "DateManager.h"
+#include "DataManager.h"
 #include "ScanManager.h"
 
 void Test_DirectionList()
@@ -133,7 +133,12 @@ void Test_Map()
 	for (const auto &e : mp)
 		cout << e.first << " : " << e.second << endl;
 }
-
+void Test_Scan()
+{
+	const string& path = "C:\\Users\\ÄºÐÇÖ®³½\\Desktop\\Day code";
+	ScanManager sm;
+	sm.ScanDirectory(path);
+}
 int main()
 {
 	//Test_DirectionList();
@@ -141,7 +146,8 @@ int main()
 	//Test_SqliteManager();
 	//Test_Log();
 	//Test_Set();
-	Test_Map();
+	//Test_Map();
+	Test_Scan();
 	return 0;
 }
 
