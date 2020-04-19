@@ -6,9 +6,11 @@
 #include <set>
 #include <map>
 
-#include "./sqlite/sqlite3.h"
+#include "sqlite\sqlite3.h"
 
 #include <io.h>
-#define SQL_BUFFER_SIZE 256
+
 
 using namespace std;
+
+#define SQL_BUFFER_SIZE 256

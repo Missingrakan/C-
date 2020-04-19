@@ -2,13 +2,13 @@
 
 #include "common.h"
 #include "Sysutil.h"
-#include "./sqlite/sqlite3.h"
+#include "sqlite\sqlite3.h"
 #include "DataManager.h"
 #include "ScanManager.h"
 
 void Test_DirectionList()
 {
-	const string& path = "C:\\Users\\暮星之辰\\Desktop\\Day code";
+	const string& path = "E:\\test";
 	vector<string> subfile, subdir;
 	DirectionList(path, subfile, subdir);
 	//DirectionList(path);
@@ -135,9 +135,34 @@ void Test_Map()
 }
 void Test_Scan()
 {
-	const string& path = "C:\\Users\\暮星之辰\\Desktop\\Day code";
+	const string& path = "E:\\test";
 	ScanManager sm;
 	sm.ScanDirectory(path);
+}
+void Test_Search()
+{
+	const string &path = "E:\\test";
+
+	//创建扫描实例
+	ScanManager sm;
+	sm.ScanDirectory(path);
+
+	//创建搜索实例
+	DataManager dm;
+
+	string key;
+	vector<pair<string, string>> doc_path;
+	while (1)
+	{
+		cout << "请输入要搜索的关键字:>";
+		cin >> key;
+		dm.Search(key, doc_path);
+
+		//显示结果
+		printf("%-15s%-50s\n", "名称", "路径");
+		for (const auto &e : doc_path)
+			printf("%-15s%-50s\n", e.first.c_str(), e.second.c_str());
+	}
 }
 int main()
 {
@@ -147,7 +172,8 @@ int main()
 	//Test_Log();
 	//Test_Set();
 	//Test_Map();
-	Test_Scan();
+	//Test_Scan();
+	Test_Search();
 	return 0;
 }
 
