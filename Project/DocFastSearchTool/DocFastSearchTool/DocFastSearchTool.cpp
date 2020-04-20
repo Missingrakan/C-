@@ -5,6 +5,9 @@
 #include "sqlite\sqlite3.h"
 #include "DataManager.h"
 #include "ScanManager.h"
+#include "Sysframe.h"
+
+char *title = "文档快速搜索工具";
 
 void Test_DirectionList()
 {
@@ -136,7 +139,7 @@ void Test_Map()
 void Test_Scan()
 {
 	const string& path = "E:\\test";
-	ScanManager sm;
+	ScanManager &sm = ScanManager::CreateInstance(path);
 	sm.ScanDirectory(path);
 }
 void Test_Search()
@@ -144,11 +147,13 @@ void Test_Search()
 	const string &path = "E:\\test";
 
 	//创建扫描实例
-	ScanManager sm;
-	sm.ScanDirectory(path);
+	ScanManager::CreateInstance(path).ScanDirectory(path);
+	//ScanManager sm;
+	//sm.ScanDirectory(path);
 
 	//创建搜索实例
-	DataManager dm;
+	DataManager &dm = DataManager::GetInstance();
+	//DataManager dm;
 
 	string key;
 	vector<pair<string, string>> doc_path;
@@ -164,6 +169,21 @@ void Test_Search()
 			printf("%-15s%-50s\n", e.first.c_str(), e.second.c_str());
 	}
 }
+void Test_ChineseConvert()
+{
+	string str = "毛国强";
+	string pinyin = ChineseConvertPinYinAllSpell(str);
+	cout << "pinyin = " << pinyin << endl;
+
+	string initials = ChineseConvertPinYinInitials(str);
+	cout << "initials = " << initials << endl;
+}
+void Test_Frame()
+{
+	DrawFrame(title);
+	DrawMenu();
+	SystemEnd();
+}
 int main()
 {
 	//Test_DirectionList();
@@ -173,7 +193,9 @@ int main()
 	//Test_Set();
 	//Test_Map();
 	//Test_Scan();
-	Test_Search();
+	//Test_Search();
+	//Test_ChineseConvert();
+	Test_Frame();
 	return 0;
 }
 

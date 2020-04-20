@@ -89,6 +89,13 @@ AutoGetResultTable::~AutoGetResultTable()
 }
 ///////////////////////////////////////////////////////////////////////
 
+
+DataManager& DataManager::GetInstance()
+{
+	static DataManager inst;
+	return inst;
+}
+
 DataManager::DataManager()
 {
 	m_dbmgr.Open(DOC_DB);
@@ -117,12 +124,15 @@ void DataManager::GetDocs(const string &path, multiset<string> &docs)
 	sprintf(sql, "select doc_name from %s where doc_path='%s'", DOC_TABLE, path.c_str());
 	int row = 0, col = 0;
 	char **ppRet = 0;
-	m_dbmgr.GetResultTable(sql, row, col, ppRet);
+	
+	//m_dbmgr.GetResultTable(sql, row, col, ppRet);
+	AutoGetResultTable at(&m_dbmgr, sql, row, col, ppRet);
 
 	for (int i = 1; i < row; ++i)
 		docs.insert(ppRet[i]);
 
-	sqlite3_free_table(ppRet);
+	////释放结果表
+	//sqlite3_free_table(ppRet);
 }
 void DataManager::DeleteDoc(const string &path, const string &doc)
 {
@@ -149,12 +159,13 @@ void DataManager::Search(const string &key, vector<pair<string, string>> &doc_pa
 	int row = 0, col = 0;
 	char **ppRet = nullptr;
 
-	m_dbmgr.GetResultTable(sql, row, col, ppRet);
+	//m_dbmgr.GetResultTable(sql, row, col, ppRet);
+	AutoGetResultTable at(&m_dbmgr, sql, row, col, ppRet);
 
 	doc_path.clear();		//不清空可能导致查询后前一个还存在
 	for (int i = 1; i <= row; ++i)
 		doc_path.push_back(make_pair(ppRet[i*col], ppRet[i*col + 1]));
 
-	//释放结果表
-	sqlite3_free_table(ppRet);
+	////释放结果表
+	//sqlite3_free_table(ppRet);
 }

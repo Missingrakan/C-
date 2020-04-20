@@ -3,6 +3,25 @@
 #include "ScanManager.h"
 #include "Sysutil.h"
 
+ScanManager::ScanManager()
+{}
+void ScanManager::StartScan(const string &path)
+{
+	while (1)
+	{
+		//等待3秒开始扫描
+		this_thread::sleep_for(chrono::seconds(30));
+		ScanDirectory(path);
+	}
+}
+ScanManager& ScanManager::CreateInstance(const string &path)
+{
+	static ScanManager inst;
+	thread scan_thread(&StartScan, &inst, path);		//调动的是类的函数方法，所以需要把这个类的对象传进来（相当于传递this指针）
+	scan_thread.detach();
+	return inst;
+}
+
 void ScanManager::ScanDirectory(const string &path)
 {
 	//1.扫描本地文件系统
@@ -14,6 +33,8 @@ void ScanManager::ScanDirectory(const string &path)
 	local_set.insert(local_dirs.begin(), local_dirs.end());
 
 	//2.扫描本地数据库文件
+	DataManager &m_db = DataManager::GetInstance();
+
 	multiset<string> db_set;
 	m_db.GetDocs(path, db_set);
 
