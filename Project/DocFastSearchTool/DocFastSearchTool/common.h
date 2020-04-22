@@ -14,6 +14,7 @@
 #include <chrono>
 
 #include <Windows.h>
+#include <algorithm>
 
 using namespace std;
 

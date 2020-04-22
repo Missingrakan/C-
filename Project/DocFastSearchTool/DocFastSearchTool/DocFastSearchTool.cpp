@@ -9,6 +9,53 @@
 
 char *title = "文档快速搜索工具";
 
+int main(int argc, char *argv[])
+{
+	const string &path = "E:\\test";
+
+	//创建扫描实例
+	ScanManager::CreateInstance(path).ScanDirectory(path);
+
+	//创建搜索实例
+	DataManager &dm = DataManager::GetInstance();
+
+	vector<pair<string, string>> doc_path;
+	string key;
+	while (1)
+	{
+		DrawFrame(title);
+		DrawMenu();
+		cin >> key;
+		if (key == "exit")
+			break;
+		dm.Search(key, doc_path);
+		int init_row = 5;
+		int count = 0;
+		string prefix, highlight, suffix;
+		for (const auto &e : doc_path)
+		{
+			string doc_name = e.first;
+			string doc_path = e.second;
+
+			DataManager::SplitHighlight(doc_name, key, prefix, highlight, suffix);
+
+			SetCurPos(2, init_row + count++);
+			cout << prefix;
+			ColourPrintf(highlight.c_str());
+			cout << suffix;
+
+			SetCurPos(33, init_row + count - 1);
+			printf("%-50s", doc_path.c_str());
+
+		}
+		SystemEnd();
+		system("pause");
+	}
+	SystemEnd();
+	return 0;
+}
+
+/*
 void Test_DirectionList()
 {
 	const string& path = "E:\\test";
@@ -198,7 +245,7 @@ int main()
 	Test_Frame();
 	return 0;
 }
-
+*/
 /*
 static int callback(void *data, int argc, char **argv, char **azColName)
 {
