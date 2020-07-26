@@ -8,43 +8,112 @@
 #include <map>
 #include <vector>
 #include <functional>
-//#include <hash_set>
-//#include <unordered_set>
-//#include <hash_map>
-//#include <unordered_map>
+#include <hash_set>
+#include <unordered_set>
+#include <hash_map>
+#include <unordered_map>
 
 using namespace std;
 
 void main()
 {
-	map<int, string> ismap = { { 1, "Student" }, { 2, "Teacher" }, { 3, "Friend" }, { 4, "Bit" } };
-	ismap[1] = "学生";
-	ismap[2] = "老师";
-	ismap[3] = "朋友";
-	ismap[-1] = "hehe";
-	int key = 10;
-	auto ret_it = ismap.find(key);
-	if (ret_it != ismap.end())
-	{
-		//
-	}
-	else
-		cout << "不存在." << endl;
-	ismap[5] = "服务"; //相当于数据插入  <5-服务>
-	for (const auto &e : ismap)
+	hash_map<int, string> hmap = { { 1, "Student" }, { 3, "Friend" }, { 1, "Student1" }, { 4, "Bit" }, { 1, "Student2" }, { 2, "Teacher" } };
+	hmap[1] = "学生";
+	for (auto &e : hmap)
 		cout << e.first << " : " << e.second << endl;
+	cout << endl;
 
-	//map<int, string> ismap;
-	//pair<int, string> v[] = { { 3, "Student" }, { 1, "Friend" }, { 2, "Bit" }, { 4, "Teacher" } };		//最终结果为有序map
-	//int n = sizeof(v) / sizeof(v[0]);
-	//for (int i = 0; i < n; ++i)
-	//	ismap.insert(v[i]);
-	//auto it = ismap.begin();
-	////it->first = 10;				//it为常迭代器
-	////it->second[0] = 's';
-	//for (const auto &e : ismap)
-	//	cout << e.first << " : " << e.second << endl;
+	unordered_map<int, string> unmap = { { 1, "Student" }, { 3, "Friend" }, { 1, "Student1" }, { 4, "Bit" }, { 1, "Student2" }, { 2, "Teacher" } };
+	for (auto &e : unmap)
+		cout << e.first << " : " << e.second << endl;
+	cout << endl;
+
+	cout << "----------------------------------------------------------" << endl;
+
+	hash_multimap<int, string> hmultimap = { { 1, "Student" }, { 3, "Friend" }, { 1, "Student1" }, { 4, "Bit" }, { 1, "Student2" }, { 2, "Teacher" } };
+	for (auto &e : hmultimap)
+		cout << e.first << " : " << e.second << endl;
+	cout << endl;
+
+	unordered_multimap<int, string> unmultimap = { { 1, "Student" }, { 3, "Friend" }, { 1, "Student1" }, { 4, "Bit" }, { 1, "Student2" }, { 2, "Teacher" } };
+	for (auto &e : unmultimap)
+		cout << e.first << " : " << e.second << endl;
+	cout << endl;
+
 }
+
+//void main()
+//{
+//	hash_set<int> hset = { 25, 46, 89, 74, 56, 31, 25, 25, 25, 25, 25, 49, 5, 7, 847 };
+//	for (auto &e : hset)
+//		cout << e << " ";
+//	cout << endl;
+//	unordered_set<int> unset = { 25, 46, 89, 74, 56, 31, 25, 25, 25, 25, 25, 49, 5, 7, 847 };
+//	for (auto &e : unset)
+//		cout << e << " ";
+//	cout << endl;
+//	cout << "----------------------------------------------------------" << endl;
+//	hash_multiset<int> hmultiset = { 25, 46, 89, 74, 56, 31, 25, 25, 25, 25, 25, 49, 5, 7, 847 };
+//	for (auto &e : hmultiset)
+//		cout << e << " ";
+//	cout << endl;
+//	unordered_multiset<int> unmultiset = { 25, 46, 89, 74, 56, 31, 25, 25, 25, 25, 25, 49, 5, 7, 847 };
+//	for (auto &e : unmultiset)
+//		cout << e << " ";
+//	cout << endl;
+//}
+
+////at() 会检查边界
+////[] 不会检查  ->键值不存在时，把数据插入
+//int main()
+//{
+//	//map-->将键值对结果按first有序排列，不保存重复元素
+//	map<int, string> ismap = { { 1, "Student" }, { 1, "Student1" }, { 1, "Student2" }, { 2, "Teacher" }, { 3, "Friend" }, { 4, "Bit" } };
+//	//头插
+//	ismap.insert(ismap.begin(), make_pair(8, "服务"));
+//	//尾插
+//	ismap.insert(ismap.end(), make_pair(0, "666"));
+//	//在某一个位置之前插入
+//	auto pos = ismap.find(4);
+//	if (pos != ismap.end())
+//	{
+//		ismap.insert(pos,make_pair(7, "学习"));
+//	}
+//	for (const auto &e : ismap)
+//		cout << e.first << " : " << e.second << endl;
+//	return 0;
+//}
+
+//void main()
+//{
+//	map<int, string> ismap = { { 1, "Student" }, { 2, "Teacher" }, { 3, "Friend" }, { 4, "Bit" } };
+//	ismap[1] = "学生";
+//	ismap[2] = "老师";
+//	ismap[3] = "朋友";
+//	ismap[-1] = "hehe";
+//	int key = 10;
+//	auto ret_it = ismap.find(key);
+//	if (ret_it != ismap.end())
+//	{
+//		//
+//	}
+//	else
+//		cout << "不存在." << endl;
+//	ismap[5] = "服务"; //相当于数据插入  <5-服务>
+//	for (const auto &e : ismap)
+//		cout << e.first << " : " << e.second << endl;
+//
+//	//map<int, string> ismap;
+//	//pair<int, string> v[] = { { 3, "Student" }, { 1, "Friend" }, { 2, "Bit" }, { 4, "Teacher" } };		//最终结果为有序map
+//	//int n = sizeof(v) / sizeof(v[0]);
+//	//for (int i = 0; i < n; ++i)
+//	//	ismap.insert(v[i]);
+//	//auto it = ismap.begin();
+//	////it->first = 10;				//it为常迭代器
+//	////it->second[0] = 's';
+//	//for (const auto &e : ismap)
+//	//	cout << e.first << " : " << e.second << endl;
+//}
 
 //class Foo
 //{
