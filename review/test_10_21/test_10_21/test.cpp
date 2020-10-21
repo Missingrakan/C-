@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vld.h>
+#include <assert.h>
 using namespace std;
 
 #define DataType char
