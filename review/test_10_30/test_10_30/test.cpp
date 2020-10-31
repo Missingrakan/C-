@@ -351,7 +351,7 @@ int main()
 	return 0;
 }
 
-#endif
+
 
 //验证：vs中的string类是按照深拷贝的方式实现的
 
@@ -363,4 +363,222 @@ int main()
 	printf("%p\n", s1.c_str());
 	printf("%p\n", s2.c_str());
 	return 0;
+}
+
+#endif
+
+#include <assert.h>
+
+namespace bit
+{
+	class string
+	{
+	public:
+		typedef char* iterator;
+	public:
+		string(const char* str = "")
+		{
+			if (str == nullptr)
+				str = "";
+
+			_capacity = strlen(str);
+			_size = _capacity;
+			_str = new char[_capacity + 1];
+			strcpy(_str, str);
+		}
+
+		string(const string& s)
+			: _str(nullptr)
+			, _capacity(0)
+			, _size(0)
+		{
+			string strtmp(s._str);
+			this->swap(strtmp);
+		}
+
+		string(size_t n, char ch = char())
+			: _str(nullptr)
+			, _capacity(n)
+			, _size(n)
+		{
+			memset(_str, ch, n);
+			_str[n] = '\0';
+		}
+
+		string& operator=(string& s)
+		{
+			swap(s);
+			return *this;
+		}
+
+		~string()
+		{
+			if (_str)
+			{
+				delete[] _str;
+				_str = nullptr;
+				_capacity = 0;
+				_size = 0;
+			}
+		}
+
+	public:
+		iterator begin()
+		{
+			return _str;
+		}
+
+		iterator end()
+		{
+			return _str + size();
+		}
+
+	public:
+		size_t size()const
+
+		{
+			return _size;
+		}
+
+		size_t capacity()const
+		{
+			return _capacity;
+		}
+
+		size_t empty()const
+		{
+			return 0 == _size;
+		}
+
+		void clear()
+		{
+			_str[0] = '\0';
+			_size = 0;
+		}
+
+		void resize(size_t newsize, char ch=char())
+		{
+			size_t oldsize = _size;
+			if (newsize > oldsize)
+			{
+				if (newsize > _capacity)
+					reserve(_capacity*2);
+
+				memset(_str + oldsize, ch, newsize - oldsize);
+			}
+
+			_str[newsize] = '\0';
+			_size = newsize;
+		}
+
+		void reserve(size_t newcapacity)
+		{
+			if (newcapacity > _capacity)
+			{
+				char* tmp = new char[newcapacity + 1];
+				strcpy(tmp, _str);
+				delete[] _str;
+				_str = tmp;
+				_capacity = newcapacity;
+			}
+		}
+
+	public:
+			char& operator[](size_t index)
+			{
+				assert(index < _size);
+				return _str[index];
+			}
+
+			const char& operator[](size_t index)const
+			{
+				assert(index < _size);
+				return _str[index];
+			}
+	public:
+		string& operator+=(char ch)
+		{
+			if (_size == _capacity)
+				reserve(_capacity * 2);
+
+			_str[_size++] = ch;
+			_str[_size] = '\0';
+			return *this;
+		}
+
+		string& operator+=(const char* str)
+		{
+			int len = strlen(str);
+			if (_size + len > _capacity)
+			{
+				reserve((_capacity + len) * 2);
+			}
+			strcpy(_str + _size, str);
+			_size += len;
+
+			return *this;
+		}
+
+		string& operator+=(const string& s)
+		{
+			*this += s._str;
+			return *this;
+		}
+
+		void push_back(char ch)
+		{
+			*this += ch;
+		}
+
+		string& append(const string& s)
+		{
+			*this += s;
+			return *this;
+		}
+	public:
+		void swap(string& s)
+		{
+			std::swap(_str, s._str);
+			std::swap(_size, s._size);
+			std::swap(_capacity, s._capacity);
+		}
+	public:
+		const char* c_str()const
+		{
+			return _str;
+		}
+		size_t find(char ch, size_t pos = 0)
+		{
+			if (pos >= _size)
+				return npos;
+
+			for (size_t index = pos; index < _size; ++index)
+			{
+				if (_str[index] == ch)
+					return index;
+			}
+			return npos;
+		}
+
+		size_t rfind(char ch, size_t pos = npos)
+		{
+			if (pos == npos)
+				pos = _size - 1;
+
+			for (int index = pos; index >= 0; --index)
+			{
+				if (_str[index] == ch)
+					return pos;
+			}
+			return npos;
+		}
+	private:
+		char* _str;
+		size_t _size;
+		size_t _capacity;
+
+		static size_t npos;
+	};
+
+	size_t string::npos = 1;
 }
