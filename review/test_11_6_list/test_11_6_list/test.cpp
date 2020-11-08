@@ -74,11 +74,76 @@ namespace bit
 		Node* _ptr;
 	};
 
+	//反向迭代器的++就是正向迭代器的--
+	//反向迭代器的--就是正向迭代器的++
+	template<class T, class Iterator>
+	class ListReverseIterator
+	{
+		typedef ListNode<T> Node;
+		typedef ListReverseIterator<T, Iterator> self;
+	public:
+		ListReverseIterator(Node* pNode = nullptr)
+			: _it(pNode)
+		{}
+
+		ListReverseIterator(Iterator it)
+			: _it(it)
+		{}
+
+		T& operator*()
+		{
+			Iterator temp(_it);
+			--temp;
+			return *temp;
+		}
+
+		T* operator->()
+		{
+			return &(*_it);
+		}
+
+		self& operator++()
+		{
+			--_it;
+			return *this;
+		}
+
+		self operator++(int)
+		{
+			_it--;
+			return *this;
+		}
+
+		self& operator--()
+		{
+			++_it;
+			return *this;
+		}
+		self& operator--(int)
+		{
+			_it++;
+			return *this;
+		}
+	public: 
+		bool operator!=(const self& s)
+		{
+			return _it != s._it;
+		}
+
+		bool operator==(const self& s)
+		{
+			return _it == s._it;
+		}
+	private:
+		Iterator _it;
+	};
+
 	template<class T>
 	class list
 	{
 		typedef ListNode<T> Node;
 		typedef ListIterator<T> iterator;
+		typedef ListReverseIterator<T, iterator> reverse_iterator;
 	public:
 		list()
 		{
@@ -105,6 +170,7 @@ namespace bit
 
 		list(list<T> &L)
 		{
+			CreateHead();
 			auto it = L.begin();
 			while (it != L.end())
 			{
@@ -130,15 +196,25 @@ namespace bit
 		{
 			return iterator(head);
 		}
+
+		reverse_iterator rbegin()
+		{
+			return reverse_iterator(end());
+		}
+
+		reverse_iterator rend()
+		{
+			return reverse_iterator(begin());
+		}
 	public:
-		size_t size()
+		size_t size()const
 		{
 			size_t count = 0;
-			auto it = begin();
-			while (it != end())
+			Node* cur = head->next;
+			while (cur != head)
 			{
 				++count;
-				++it;
+				cur = cur->next;
 			}
 			return count;
 		}
@@ -148,10 +224,10 @@ namespace bit
 			return head->next == head;
 		}
 
-		void resize(size_t newsize, const T& data)
+		void resize(size_t newsize, const T& data = T())
 		{
 			size_t oldsize = size();
-			if (newsize < oldsize)
+			if (newsize <= oldsize)
 			{
 				for (size_t i = newsize; i < oldsize ; ++i)
 					pop_back();
@@ -220,7 +296,7 @@ namespace bit
 			Node* pnode = pos._ptr;
 			Node* pret = pnode->next;
 
-			if (pret != head)
+			if (pnode != head)
 			{
 				pnode->prev->next = pnode->next;
 				pnode->next->prev = pnode->prev;
@@ -269,9 +345,100 @@ void TestMyList1()
 	bit::list<int> L1;
 	bit::list<int> L2(10, 5);
 	cout << L2.size() << endl;
+	auto it = L2.begin();
+	while (it != L2.end())
+	{
+		cout << *it << " ";
+		++it;
+	}
+	cout << endl;
 
 	int array[] = { 1, 2, 3, 4, 5 };
 	bit::list<int> L3(array, array + 5);
+	for (auto e : L3)
+	{
+		cout << e << " ";
+	}
+	cout << endl;
 
 	bit::list<int> L4(L3);
+}
+
+// size()
+// resize()
+void TestMyList2()
+{
+	int array[] = { 1, 2, 3, 4, 5 };
+	bit::list<int> L{ array, array + 5 };
+
+	cout << L.size() << endl;
+
+	L.resize(10, 6);
+	cout << L.size() << endl;
+	for (auto e : L)
+	{
+		cout << e << " ";
+	}
+	cout << endl;
+
+	L.resize(3);
+	cout << L.size() << endl;
+	for (auto e : L)
+	{
+		cout << e << " ";
+	}
+	cout << endl;
+}
+
+void TestMyList()
+{
+	int array[] = { 1, 2, 3, 4, 5 };
+	bit::list<int> L{ array, array + 5 };
+
+	auto it = L.rbegin();
+	while (it != L.rend())
+	{
+		cout << *it << " ";
+		++it;
+	}
+	cout << endl;
+
+	cout << L.front() << endl;
+	cout << L.back() << endl;
+
+	L.clear();
+	if (L.empty())
+		cout << L.size() << endl;
+}
+
+
+struct A
+{
+	int a;
+	int b;
+	int c;
+};
+
+void TestMyList3()
+{
+	bit::list<A> L;
+	A a{ 1, 2, 3 };
+	L.push_back(a);
+
+	A* pa = &a;
+	pa->a = 10;
+
+	auto it = L.begin();
+	it->a = 100;
+	it.operator->()->a = 200;  // it->->a;错误
+	it.operator++();  // ++it;
+}
+
+int main()
+{
+	//TestMyList1();
+	//TestMyList2();
+	//TestMyList();
+	TestMyList3();
+	return 0;
 }
