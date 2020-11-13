@@ -76,9 +76,9 @@ int numChar(string str, int k)
 
 	if ((small + big) == 0)
 		return 0;
-	else if (small == k || big == k)
+	else if (((small == 0) && big>0) || ((big == 0) && small>0))
 		return 10;
-	else if (small > 0 && big > 0)
+	else
 		return 20;
 
 	return 0;
