@@ -4,6 +4,90 @@
 
 using namespace std;
 
+class A
+{};
+class B : public A{};
+
+class Base
+{
+public:
+	virtual void TestFunc1()
+	{
+		cout << "Base::TestFunc1()" << endl;
+	}
+
+	virtual void TestFunc2(int a)
+	{
+		cout << "Base::TestFunc2()" << endl;
+	}
+
+	virtual A* TestFunc3()
+	{
+		cout << "Base::TestFunc3()" << endl;
+		return nullptr;
+	}
+
+	virtual void TestFunc4()
+	{
+		cout << "Base::TestFunc4()" << endl;
+	}
+};
+
+class Derived :public Base
+{
+public:
+	virtual void TestFunc1()
+	{
+		cout << "Derived::TestFunc1()" << endl;
+	}
+
+	virtual void TestFunc2()
+	{
+		cout << "Derived::TestFunc2()" << endl;
+	}
+
+	// 返回值类型不同，不能构成重写
+	/*virtual int TestFunc3()
+	{
+	cout << "Derived::TestFunc3()" << endl;
+	return 0;
+	}*/
+
+	virtual B* TestFunc3()
+	{
+		cout << "Derived::TestFunc3()" << endl;
+		return nullptr;
+	}
+
+private:
+	virtual void TestFunc4()
+	{
+		cout << "Derived::TestFunc4()" << endl;
+	}
+};
+
+void TestDynamic(Base* pb)
+{
+	pb->TestFunc1();
+
+	// 在编译阶段，编译器只会将pb当成基类的指针处理
+	// 因此：pb只能调用基类的成员函数
+	pb->TestFunc2(10);
+	pb->TestFunc3();
+
+	pb->TestFunc4();
+}
+
+int main()
+{
+	Base b;
+	Derived d;
+	TestDynamic(&b);
+	TestDynamic(&d);
+	return 0;
+}
+
+/*
 class Base
 {
 public:
@@ -49,6 +133,7 @@ int main()
 
 	return 0;
 }
+*/
 
 /*
 class Person
