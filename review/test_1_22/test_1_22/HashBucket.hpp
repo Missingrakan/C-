@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "common.h"
+
 template <class T>
 struct HashNode
 {
@@ -62,7 +64,7 @@ struct HashBucketIterator
 		return &(operator*());
 	}
 
-	Self& operator++(int)
+	Self& operator++()
 	{
 		Next();
 		return *this;
@@ -118,7 +120,10 @@ struct HashBucketIterator
 template<class T, class KOFV, class DToInt>
 class HashBucket
 {
+	friend HashBucketIterator<T, KOFV, DToInt>;
 	typedef HashNode<T> Node;
+public:
+	typedef HashBucketIterator<T, KOFV, DToInt> iterator;
 public:
 	HashBucket(size_t capacity = 10)
 		: table(10)
@@ -149,8 +154,186 @@ public:
 		return iterator(nullptr, this);
 	}
 
+	pair<iterator, bool> InsertUnique(const T& data)
+	{
+		_CheckCapacity();
+		//1.通过哈希函数确定桶号
+		size_t bucketno = HashFunc(data, table.capacity());
 
+		//2.检测data是否在bucketno桶中存在
+		Node* cur = table[bucketno];
+		while (cur)
+		{
+			if (KOFV()(data) == KOFV()(cur->data))
+			{
+				return make_pair(iterator(cur, this), false);
+			}
+
+			cur = cur->next;
+		}
+
+		//3.插入元素
+		cur = new Node(data);
+		cur->next = table[bucketno];
+		table[bucketno] = cur;
+		_size++;
+
+		return make_pair(iterator(cur, this), true);
+	}
+
+	bool InsertEqual(const T& data)
+	{
+		size_t bucketno = HashFunc(data, table.capacity());
+
+		Node* cur = new Node(data);
+		cur->next = table[bucketno];
+		table[bucketno] = cur;
+		_size++;
+
+		return true;
+	}
+
+	size_t EraseUnique(const T& data)
+	{
+
+	}
+
+	size_t EraseEquel(const T& data)
+	{
+		return 0;
+	}
+
+	iterator find(const T& data)
+	{
+		size_t bucketno = HashFunc(data, table.capacity());
+
+		Node* cur = table[bucketno];
+		while (cur)
+		{
+			if (KOFV(data) == KOFV(cur->data))
+				return iterator(cur, this);
+
+			cur = cur->next;
+		}
+
+		return end();
+	}
+
+	size_t size()const
+	{
+		return _size;
+	}
+
+	bool empty()const
+	{
+		return _size == 0;
+	}
+
+	void PrintHashBucket()
+	{
+		for (size_t i = 0; i < table.capacity(); ++i)
+		{
+			cout << "[" << i << "]:";
+
+			Node* cur = table[i];
+			while (cur)
+			{
+				cout << cur->data << "--->";
+				cur = cur->next;
+			}
+
+			cout << "NULL" << endl;
+		}
+
+		cout << "================================================" << endl;
+	}
+
+	void swap(HashBucket<T, KOFV, DToInt>& ht)
+	{
+		table.swap(ht.table);
+		swap(_size, ht._size);
+	}
+
+	void clear()
+	{
+		for (size_t i = 0; i < table.capacity(); ++i)
+		{
+			Node* cur = table[i];
+			while(cur)
+			{
+				table[i] = cur->next;
+				delete cur;
+				cur = table[i];
+			}
+		}
+
+		_size = 0;
+	}
+public:
+	size_t BucketCount()const
+	{
+		return table.capacity;
+	}
+
+	size_t BucketSize(size_t bucketno)const
+	{
+		if (bucket >= BucketCount())
+			return 0;
+
+		Node* cur = table[bucketno];
+		size_t count = 0;
+		while (cur)
+		{
+			count++;
+			cur = cur->next;
+		}
+
+		return count;
+	}
+
+	size_t Bucket(const T& data)
+	{
+		return HashFunc(data, BucketCount());
+	}
 private:
-	std::vector<Node*> table;
+	size_t HashFunc(const T& data, size_t capacity)
+	{
+		//DToInt dtoi;
+		//return dtoi(data) % capacity;
+		return DToInt()(KOFV()(data)) % capacity;
+	}
+
+	void _CheckCapacity()
+	{
+		if (_size == table.capacity())
+		{
+			vector<Node*> bucket(GetNextPrime(table.capacity()));
+
+			//将旧桶中每个链表中的节点逐个移动到新桶中
+			for (size_t i = 0; i < table.capacity(); ++i)
+			{
+				Node* cur = table[i];
+				while (cur)
+				{
+					//1.需要将该节点从旧链表中拆下来
+					table[i] = cur->next;
+
+					//2.将cur插入到新桶中
+					//a.计算该节点在新哈希桶的哪个桶中
+					size_t bucketno = HashFunc(cur->data, bucket.capacity());
+
+					//b.将该节点插入到新桶-----》头插
+					cur->next = bucket[bucketno];
+					bucket[bucketno] = cur;
+
+					//3.取桶中下一个节点
+					cur = table[i];
+				}
+			}
+			table.swap(bucket);
+		}
+	}
+private:
+	vector<Node*> table;
 	size_t _size;
 };
