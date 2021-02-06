@@ -3,8 +3,133 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <thread>
+#include <mutex>
 using namespace std;
 
+template<class T>
+class SharedPtr
+{
+public:
+	SharedPtr(T* ptr = nullptr) : _ptr(ptr), _pRefCount(new int(1)), _pMutex(new mutex)
+	{}
+
+	SharedPtr(const SharedPtr<T>& sp) : _ptr(sp._ptr), _pRefCount(sp._pRefCount), _pMutex(sp._pMutex)
+	{
+		AddRefCount();
+	}
+
+	SharedPtr<T>& operator=(const SharedPtr<T>& sp)
+	{
+		if (_ptr != sp._ptr)
+		{
+			Release();
+			_ptr = sp._ptr;
+			_pRefCount = sp._pRefCount;
+			AddRefCount();
+		}
+
+		return *this;
+	}
+
+	~SharedPtr()
+	{
+		Release();
+	}
+
+public:
+	void AddRefCount()
+	{
+		_pMutex->lock();
+		++(*_pRefCount);
+		_pMutex->unlock();
+	}
+
+	void Release()
+	{
+		bool deleteflag = false;
+		_pMutex->lock();
+		if (--(*_pRefCount) == 0)
+		{
+			delete _ptr;
+			delete _pRefCount;
+			deleteflag = true;
+		}
+		_pMutex->unlock();
+		if (deleteflag)
+			delete _pMutex;
+	}
+
+	T& operator*()const
+	{
+		return *_ptr;
+	}
+
+	T* operator->()const
+	{
+		return _ptr;
+	}
+
+	int UseCount()
+	{
+		return *_pRefCount;
+	}
+
+	T* Get()
+	{
+		return _ptr;
+	}
+private:
+	int* _pRefCount;
+	T* _ptr;
+	mutex* _pMutex;
+};
+
+class Date
+{
+public:
+	Date(){ cout << "Date::Date()" << endl; }
+	~Date(){ cout << "Date::~Date()" << endl; }
+	int _year = 0;
+	int _month = 0;
+	int _day = 0;
+};
+
+mutex mt;
+void SharedPtrFunc(SharedPtr<Date>& sp, size_t n)
+{
+	SharedPtr<Date> copy(sp);
+	cout << sp.UseCount() << endl;
+
+	for (size_t i = 0; i < n; ++i)
+	{
+		mt.lock();
+		copy->_year++;
+		copy->_month++;
+		copy->_day++;
+		mt.unlock();
+	}
+}
+
+int main()
+{
+	SharedPtr<Date> p(new Date);
+	cout << p.Get() << endl;
+	const size_t n = 10000000;
+
+	thread t1(SharedPtrFunc, p, n);   //t1
+	thread t2(SharedPtrFunc, p, n);   //t2
+
+	t1.join();
+	t2.join();
+
+	cout << p->_year << endl;
+	cout << p->_month << endl;
+	cout << p->_day << endl;
+	return 0;
+}
+
+/*
 void main()
 {
 	int *p = new int(10);
@@ -19,7 +144,7 @@ void main()
 	cout << sp.unique() << endl;
 }
 
-/*
+
 void main()
 {
 	int *p = new int(10);
